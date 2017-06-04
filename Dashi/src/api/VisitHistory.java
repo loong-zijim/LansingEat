@@ -15,16 +15,16 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 /**
- * Servlet implementation class history
+ * Servlet implementation class VisitHistory
  */
 @WebServlet("/history")
-public class history extends HttpServlet {
+public class VisitHistory extends HttpServlet {
 	private static final long serialVersionUID = 1L;
        
     /**
      * @see HttpServlet#HttpServlet()
      */
-    public history() {
+    public VisitHistory() {
         super();
         // TODO Auto-generated constructor stub
     }
@@ -61,6 +61,5 @@ public class history extends HttpServlet {
 			e.printStackTrace();
 		}
 	}
-
 
 }
