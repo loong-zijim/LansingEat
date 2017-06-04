@@ -9,6 +9,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+
 /**
  * Servlet implementation class SearchRestaurants
  */
@@ -28,14 +32,24 @@ public class SearchRestaurants extends HttpServlet {
 	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
 	 */
 	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
-		response.setContentType("text/html");
-		PrintWriter out = response.getWriter();
-		out.println("<html><body>");
-		out.println("<h1>This is a HTML page</h1>");
-		out.println("</body></html>");
-		out.flush();
-		out.close();
+		JSONArray array = new JSONArray();
+		try {
+			if (request.getParameterMap().containsKey("user_id")
+					&& request.getParameterMap().containsKey("lat")
+					&& request.getParameterMap().containsKey("lon")) {
+				String userId = request.getParameter("user_id");
+				double lat = Double.parseDouble(request.getParameter("lat"));
+				double lon = Double.parseDouble(request.getParameter("lon"));
+				// return some fake restaurants
+				array.put(new JSONObject().put("name", "Panda Express"));
+				array.put(new JSONObject().put("name", "Hong Kong Express"));
+			}
+		} catch (JSONException e) {
+			e.printStackTrace();
+		}
+		RpcParser.writeOutput(response, array);
 	}
+
 
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
