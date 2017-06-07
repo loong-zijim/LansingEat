@@ -49,7 +49,7 @@ public class MySQLDBConnection implements DBConnection  {
 
 
 	@Override
-	public void setVisitedRestaurants(String userId, List<String> businessIds) {
+	public void setVisitedRestaurants(String userId, List<String> businessIds) {  // post
 		String query = "INSERT INTO history (user_id, business_id) VALUES (?, ?)";
 		try {
 			PreparedStatement statement = conn.prepareStatement(query);
@@ -101,26 +101,105 @@ public class MySQLDBConnection implements DBConnection  {
 
 	@Override
 	public JSONObject getRestaurantsById(String businessId, boolean isVisited) {
-		// TODO Auto-generated method stub
+		try {
+			String sql = "SELECT * from restaurants where business_id = ?";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, businessId);
+			ResultSet rs = statement.executeQuery();
+			if (rs.next()) {
+				Restaurant restaurant = new Restaurant(
+						rs.getString("business_id"), rs.getString("name"),
+						rs.getString("categories"), rs.getString("city"),
+						rs.getString("state"), rs.getFloat("stars"),
+						rs.getString("full_address"), rs.getFloat("latitude"),
+						rs.getFloat("longitude"), rs.getString("image_url"),
+						rs.getString("url"));
+				JSONObject obj = restaurant.toJSONObject();
+				obj.put("is_visited", isVisited);
+				return obj;
+			}
+		} catch (Exception e) { /* report an error */
+			System.out.println(e.getMessage());
+		}
 		return null;
 	}
 
 	@Override
 	public JSONArray recommendRestaurants(String userId) {
-		// TODO Auto-generated method stub
+		try {
+			if (conn == null) {
+				return null;
+			}
+ 
+			Set<String> visitedRestaurants = getVisitedRestaurants(userId);//step 1
+			Set<String> allCategories = new HashSet<>();// why hashSet? //step 2
+			for (String restaurant : visitedRestaurants) {
+				allCategories.addAll(getCategories(restaurant));
+			}
+			Set<String> allRestaurants = new HashSet<>();//step 3
+			for (String category : allCategories) {
+				Set<String> set = getBusinessId(category);
+				allRestaurants.addAll(set);
+			}
+			Set<JSONObject> diff = new HashSet<>();//step 4
+			int count = 0;
+			for (String businessId : allRestaurants) {
+				// Perform filtering
+				if (!visitedRestaurants.contains(businessId)) {
+					diff.add(getRestaurantsById(businessId, false));
+					count++;
+					if (count >= MAX_RECOMMENDED_RESTAURANTS) {
+						break;
+					}
+				}
+			}
+			return new JSONArray(diff);
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
 		return null;
 	}
 
 	@Override
 	public Set<String> getCategories(String businessId) {
-		// TODO Auto-generated method stub
-		return null;
+		try {
+			String sql = "SELECT categories from restaurants WHERE business_id = ? ";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, businessId);
+			ResultSet rs = statement.executeQuery();
+			if (rs.next()) {
+				Set<String> set = new HashSet<>();
+				String[] categories = rs.getString("categories").split(",");
+				for (String category : categories) {
+					// ' Japanese ' -> 'Japanese'
+					set.add(category.trim());
+				}
+				return set;
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return new HashSet<String>();
 	}
 
 	@Override
 	public Set<String> getBusinessId(String category) {
-		// TODO Auto-generated method stub
-		return null;
+		Set<String> set = new HashSet<>();
+		try {
+			// if category = Chinese, categories = Chinese, Korean, Japanese,
+			// it's a match
+			String sql = "SELECT business_id from restaurants WHERE categories LIKE ?";
+			PreparedStatement statement = conn.prepareStatement(sql);
+			statement.setString(1, "%" + category + "%");
+			ResultSet rs = statement.executeQuery();
+			while (rs.next()) {
+				String businessId = rs.getString("business_id");
+				set.add(businessId);
+			}
+		} catch (Exception e) {
+			System.out.println(e.getMessage());
+		}
+		return set;
 	}
 
 	@Override
