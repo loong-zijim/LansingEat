@@ -14,6 +14,9 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import db.DBConnection;
+import db.MySQLDBConnection;
+
 /**
  * Servlet implementation class VisitHistory
  */
@@ -40,6 +43,8 @@ public class VisitHistory extends HttpServlet {
 	/**
 	 * @see HttpServlet#doPost(HttpServletRequest request, HttpServletResponse response)
 	 */
+	private static final DBConnection connection = new MySQLDBConnection();
+
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
 		try {
 			JSONObject input = RpcParser.parseInput(request);
@@ -51,15 +56,15 @@ public class VisitHistory extends HttpServlet {
 					String businessId = (String) array.get(i);
 					visitedRestaurants.add(businessId);
 				}
-				RpcParser.writeOutput(response,
-						new JSONObject().put("status", "OK"));
+				connection.setVisitedRestaurants(userId, visitedRestaurants);
+				RpcParser.writeOutput(response, new JSONObject().put("status", "OK"));
 			} else {
-				RpcParser.writeOutput(response,
-						new JSONObject().put("status", "InvalidParameter"));
+				RpcParser.writeOutput(response, new JSONObject().put("status", "InvalidParameter"));
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+
 	}
 
 }
