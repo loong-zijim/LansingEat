@@ -1,1 +1,7 @@
-* README
+* Your Flavor: Java Web Service Development - Business Search
+** Search Nearby Restaurant
+[[https://github.com/lung-zijim/Your-Flavor/blob/master/screenshot1.png]]
+** Able to Save User's favorite Restaurant 
+[[https://github.com/lung-zijim/Your-Flavor/blob/master/screenshot2.png]]
+** Simple but Useful Recommendation by User's flavor
+[[https://github.com/lung-zijim/Your-Flavor/blob/master/screenshot3.png]]
